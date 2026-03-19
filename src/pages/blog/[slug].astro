@@ -1,0 +1,32 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => data.draft !== true);
+
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<Layout title={`${post.data.title} | Yunqi's Notes`}>
+  <article class="space-y-6">
+    <header class="space-y-3">
+      <p class="text-sm text-zinc-500">
+        {post.data.date.toISOString().slice(0, 10)}
+      </p>
+      <h1 class="text-4xl font-bold">{post.data.title}</h1>
+      <p class="text-zinc-600">{post.data.description}</p>
+    </header>
+
+    <div class="prose max-w-none">
+      <Content />
+    </div>
+  </article>
+</Layout>
