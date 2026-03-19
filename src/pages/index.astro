@@ -4,47 +4,78 @@ import { getCollection } from 'astro:content';
 
 const posts = await getCollection('blog', ({ data }) => data.draft !== true);
 posts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
-const recentPosts = posts.slice(0, 3);
+const recentPosts = posts.slice(0, 5);
+
+const tagColors: Record<string, string> = {
+  '前端':   'bg-blue-100 text-blue-700',
+  'AI':     'bg-violet-100 text-violet-700',
+  '算法':   'bg-emerald-100 text-emerald-700',
+  '随笔':   'bg-amber-100 text-amber-700',
+  '实践':   'bg-rose-100 text-rose-700',
+};
+function tagColor(tag: string) {
+  return tagColors[tag] ?? 'bg-slate-100 text-slate-600';
+}
 ---
 
 <Layout title="Yunqi's Notes">
+
   <!-- Hero -->
-  <section class="pb-12 border-b border-slate-200">
-    <p class="text-xs font-medium uppercase tracking-widest text-indigo-500 mb-4">Personal Blog</p>
-    <h1 class="text-4xl font-bold text-slate-900 leading-tight mb-4">
-      学习摘要 &amp; 技术笔记
+  <section class="pb-10 mb-10 border-b border-slate-200">
+    <div class="inline-flex items-center gap-2 bg-indigo-50 text-indigo-600 text-xs font-semibold px-3 py-1 rounded-full mb-5">
+      <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
+      Personal Blog
+    </div>
+    <h1 class="text-4xl sm:text-5xl font-extrabold leading-tight text-slate-900 mb-4">
+      学习摘要
+      <span class="block mt-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+        技术笔记
+      </span>
     </h1>
-    <p class="text-lg text-slate-500 leading-relaxed max-w-lg">
-      记录前端、AI、算法和项目实践中的学习总结，沉淀思考，持续成长。
+    <p class="text-slate-500 text-lg leading-relaxed max-w-md">
+      记录前端、AI、算法和项目实践中的思考与总结，沉淀知识，持续成长。
     </p>
+
+    <!-- Topic tags -->
+    <div class="flex flex-wrap gap-2 mt-6">
+      {(['前端', 'AI', '算法', '实践', '随笔'] as const).map(tag => (
+        <span class={`px-3 py-1 rounded-full text-sm font-medium ${tagColor(tag)}`}>
+          {tag}
+        </span>
+      ))}
+    </div>
+
     <a
       href="/blog"
-      class="mt-8 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+      class="mt-8 inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg hover:from-indigo-700 hover:to-purple-700 transition-all"
     >
       浏览所有文章
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24">
         <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
       </svg>
     </a>
   </section>
 
-  <!-- Recent Posts -->
+  <!-- Recent posts -->
   {recentPosts.length > 0 && (
-    <section class="pt-12">
-      <h2 class="text-sm font-medium uppercase tracking-widest text-slate-400 mb-6">最新文章</h2>
-      <div class="space-y-4">
-        {recentPosts.map((post) => (
+    <section>
+      <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-5">最新文章</h2>
+      <div class="space-y-3">
+        {recentPosts.map((post, i) => (
           <a
             href={`/blog/${post.id}`}
-            class="group flex items-start justify-between gap-4 rounded-xl p-4 -mx-4 hover:bg-slate-100 transition-colors"
+            class="group flex items-start gap-4 p-4 -mx-4 rounded-xl hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-200 transition-all"
           >
-            <div class="min-w-0">
-              <h3 class="font-medium text-slate-900 group-hover:text-indigo-600 transition-colors truncate">
+            <span class="shrink-0 mt-0.5 w-7 h-7 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold shadow-sm">
+              {i + 1}
+            </span>
+            <div class="min-w-0 flex-1">
+              <h3 class="font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
                 {post.data.title}
               </h3>
-              <p class="mt-1 text-sm text-slate-500 line-clamp-1">{post.data.description}</p>
+              <p class="mt-0.5 text-sm text-slate-500 truncate">{post.data.description}</p>
             </div>
-            <time class="shrink-0 text-sm text-slate-400 mt-0.5">
+            <time class="shrink-0 text-xs text-slate-400 mt-1">
               {post.data.date.toISOString().slice(0, 10)}
             </time>
           </a>
@@ -52,4 +83,5 @@ const recentPosts = posts.slice(0, 3);
       </div>
     </section>
   )}
+
 </Layout>

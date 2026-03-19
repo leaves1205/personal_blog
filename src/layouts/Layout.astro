@@ -1,12 +1,15 @@
 ---
 import '../styles/global.css';
+import { getCollection } from 'astro:content';
 
 interface Props {
   title: string;
 }
 const { title } = Astro.props;
-
 const pathname = Astro.url.pathname;
+
+const allPosts = await getCollection('blog', ({ data }) => data.draft !== true);
+allPosts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 ---
 <!doctype html>
 <html lang="zh-CN">
@@ -19,43 +22,165 @@ const pathname = Astro.url.pathname;
     <title>{title}</title>
   </head>
   <body>
-    <div class="min-h-screen flex flex-col">
 
-      <!-- Nav -->
-      <header class="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur-sm">
-        <nav class="mx-auto flex max-w-2xl items-center justify-between px-6 py-4">
-          <a href="/" class="font-semibold text-slate-900 tracking-tight hover:text-indigo-600 transition-colors">
+    <!-- ── Mobile top bar ── -->
+    <header class="lg:hidden fixed top-0 inset-x-0 z-50 flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-950 to-purple-950 shadow-md">
+      <a href="/" class="font-bold text-white text-lg tracking-tight">Yunqi's Notes</a>
+      <button id="menu-btn" aria-label="打开菜单" class="text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors">
+        <svg id="icon-open"  width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24">
+          <line x1="3" y1="6"  x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+        <svg id="icon-close" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24" class="hidden">
+          <line x1="18" y1="6"  x2="6"  y2="18"/><line x1="6"  y1="6"  x2="18" y2="18"/>
+        </svg>
+      </button>
+    </header>
+
+    <!-- ── Mobile overlay ── -->
+    <div id="overlay" class="lg:hidden fixed inset-0 z-40 bg-black/60 hidden" aria-hidden="true"></div>
+
+    <div class="flex min-h-screen">
+
+      <!-- ══ SIDEBAR ══ -->
+      <aside id="sidebar" class="
+        fixed inset-y-0 left-0 z-40 w-72
+        flex flex-col
+        bg-gradient-to-b from-indigo-950 via-indigo-900 to-purple-950
+        overflow-y-auto
+        transition-transform duration-300
+        -translate-x-full lg:translate-x-0
+      ">
+        <!-- Brand -->
+        <div class="px-6 pt-8 pb-6 border-b border-white/10">
+          <a href="/" class="block font-bold text-xl text-white tracking-tight hover:text-indigo-200 transition-colors">
             Yunqi's Notes
           </a>
-          <div class="flex items-center gap-6 text-sm">
-            <a
-              href="/"
-              class={`transition-colors ${pathname === '/' ? 'text-indigo-600 font-medium' : 'text-slate-500 hover:text-slate-900'}`}
-            >
-              首页
-            </a>
-            <a
-              href="/blog"
-              class={`transition-colors ${pathname.startsWith('/blog') ? 'text-indigo-600 font-medium' : 'text-slate-500 hover:text-slate-900'}`}
-            >
-              文章
-            </a>
-          </div>
+          <p class="mt-1 text-xs text-indigo-400">前端 · AI · 算法 · 实践</p>
+        </div>
+
+        <!-- Nav links -->
+        <nav class="px-4 pt-5 pb-4 border-b border-white/10 space-y-1">
+          <a href="/" class={`sidebar-link ${pathname === '/' ? 'active' : ''}`}>
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            首页
+          </a>
+          <a href="/blog" class={`sidebar-link ${pathname === '/blog' ? 'active' : ''}`}>
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/>
+            </svg>
+            所有文章
+          </a>
         </nav>
-      </header>
 
-      <!-- Main -->
-      <main class="mx-auto w-full max-w-2xl flex-1 px-6 py-12">
-        <slot />
-      </main>
+        <!-- Article list -->
+        <div class="px-4 pt-5 pb-8 flex-1">
+          <p class="px-2 mb-3 text-[11px] font-semibold uppercase tracking-widest text-indigo-400">
+            文章列表
+          </p>
+          {allPosts.length === 0 ? (
+            <p class="px-2 text-sm text-indigo-500 italic">暂无文章</p>
+          ) : (
+            <ol class="space-y-0.5">
+              {allPosts.map((post, i) => {
+                const isActive = pathname === `/blog/${post.id}`;
+                return (
+                  <li>
+                    <a
+                      href={`/blog/${post.id}`}
+                      class={`group flex items-start gap-2.5 px-2 py-2 rounded-lg text-sm transition-colors ${
+                        isActive
+                          ? 'bg-white/15 text-white'
+                          : 'text-indigo-200 hover:bg-white/10 hover:text-white'
+                      }`}
+                    >
+                      <span class={`shrink-0 mt-0.5 w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold ${
+                        isActive ? 'bg-indigo-400 text-white' : 'bg-white/10 text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white'
+                      } transition-colors`}>
+                        {i + 1}
+                      </span>
+                      <span class="leading-snug line-clamp-2">{post.data.title}</span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+        </div>
 
-      <!-- Footer -->
-      <footer class="border-t border-slate-200">
-        <div class="mx-auto max-w-2xl px-6 py-6 text-center text-sm text-slate-400">
+        <!-- Footer in sidebar -->
+        <div class="px-6 py-4 border-t border-white/10 text-xs text-indigo-500">
           © {new Date().getFullYear()} Yunqi's Notes
         </div>
-      </footer>
+      </aside>
+
+      <!-- ══ MAIN ══ -->
+      <div class="flex-1 lg:ml-72 flex flex-col min-h-screen">
+        <main class="flex-1 pt-14 lg:pt-0">
+          <div class="max-w-2xl mx-auto px-6 py-10">
+            <slot />
+          </div>
+        </main>
+      </div>
 
     </div>
+
+    <script>
+      const btn     = document.getElementById('menu-btn');
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('overlay');
+      const iconOpen  = document.getElementById('icon-open');
+      const iconClose = document.getElementById('icon-close');
+
+      function open() {
+        sidebar?.classList.remove('-translate-x-full');
+        overlay?.classList.remove('hidden');
+        iconOpen?.classList.add('hidden');
+        iconClose?.classList.remove('hidden');
+      }
+      function close() {
+        sidebar?.classList.add('-translate-x-full');
+        overlay?.classList.add('hidden');
+        iconOpen?.classList.remove('hidden');
+        iconClose?.classList.add('hidden');
+      }
+
+      btn?.addEventListener('click', () =>
+        sidebar?.classList.contains('-translate-x-full') ? open() : close()
+      );
+      overlay?.addEventListener('click', close);
+    </script>
+
   </body>
 </html>
+
+<style>
+  html, body { margin: 0; background: #f8fafc; }
+
+  .sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: #a5b4fc;
+    transition: background 0.15s, color 0.15s;
+    text-decoration: none;
+  }
+  .sidebar-link:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+  }
+  .sidebar-link.active {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    font-weight: 500;
+  }
+
+  /* scrollbar in sidebar */
+  #sidebar::-webkit-scrollbar { width: 4px; }
+  #sidebar::-webkit-scrollbar-track { background: transparent; }
+  #sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+</style>
