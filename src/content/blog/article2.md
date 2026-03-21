@@ -1,10 +1,10 @@
 
 
 ---
-title: artical2
+title: full-stack
 description: learning for full-stack
 date: 2026-03-21
-tags: [全栈]
+tags: [full-stack]
 draft: true
 ---
 

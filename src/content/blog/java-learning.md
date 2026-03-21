@@ -2,7 +2,7 @@
 title: JAVA
 description: learning for java:)
 date: 2026-03-21
-tags: [全栈]
+tags: [algorithm]
 draft: false
 ---
 # JAVA面试学习
