@@ -24,7 +24,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return context.redirect('/login');
   }
 
-  // 把用户信息传给页面
-  context.locals.user = user;
+  // 从 DB 读取最新 role
+  const db = env.learning_blog_db;
+  const row = await db
+    .prepare('SELECT role FROM users WHERE id = ?')
+    .bind(user.userId)
+    .first<{ role: string }>();
+
+  context.locals.user = { ...user, role: row?.role ?? 'user' };
   return next();
 });

@@ -15,6 +15,7 @@ declare namespace App {
     user: {
       userId: number;
       username: string;
+      role: string;
     };
   }
 }
