@@ -1,16 +1,14 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getCollection, render } from 'astro:content';
+import { getEntry, render } from 'astro:content';
 
-export async function getStaticPaths() {
-  const posts = await getCollection('blog', ({ data }) => data.draft !== true);
-  return posts.map((post) => ({
-    params: { slug: post.id },
-    props: { post },
-  }));
+const { slug } = Astro.params;
+const post = await getEntry('blog', slug!);
+
+if (!post || post.data.draft) {
+  return Astro.redirect('/blog');
 }
 
-const { post } = Astro.props;
 const { Content } = await render(post);
 
 const tagColors: Record<string, string> = {
