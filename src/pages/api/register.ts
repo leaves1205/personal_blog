@@ -41,5 +41,5 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     path: '/',
   });
 
-  return redirect('/');
+  return redirect('/dashboard');
 };
