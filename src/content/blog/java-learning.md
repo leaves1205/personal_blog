@@ -1,6 +1,6 @@
 ---
 title: JAVA
-description: learning for java)
+description: learning for java:)
 date: 2026-03-21
 tags: [全栈]
 draft: false
@@ -18,7 +18,6 @@ draft: false
 4. 可靠安全
 5. 多线程
 
-
 ## 2.面向对象和面向过程区别
 
 ### 面向过程：
@@ -28,7 +27,6 @@ draft: false
 ### 面向对象：
 
 把事务分解成各个对象，封装、继承、多态
-
 
 ## 3.八种基本数据类型大小和分装
 
@@ -52,7 +50,6 @@ draft: false
 
 **命名规则（硬性）**：英文字母，0-9数字，$以及_
 
-
 ## 5. instanceof关键字的作用
 
 java的双目运算符，测试一个对象是否是一个类
@@ -68,6 +65,58 @@ Integer integer = new Integer(1);
 System.out.printIn(integer instanceof Integer); //true,obj为null就直接返回false
 ```
 
-
-
 ## 6.java自动装箱与拆箱
+
+装箱：基本数据类型转为包装器类型（int->integer）调用：integer的valueOf（int）方法
+
+拆箱：包装器转基本类型（integer->int） 调用：integer的intvalue
+
+SE5后自动装箱：
+
+```
+Integer i = 10;
+```
+
+Question:
+
+```java
+public class Main {
+	public static void main(String[] args){
+		Integer i1 = 100;
+		Integer i2 = 100;
+		Integer i3 = 200;
+		Integer i4 = 200;
+		System.out.println(i1 == i2);
+		System.out.println(i3 == i4);
+	}
+}
+```
+
+output
+
+```java
+true
+false
+```
+
+第一个java队integer做了缓存机制（integer cache）默认范围-127 - 127,在范围内的值是复用一个对象，超出该值就创造新对象
+
+两个变量值指同一个对象
+
+第二个超出缓存范围（127）
+
+所以
+
+i3 = 200； new一个对象
+
+i4 = 200； new一个对象
+
+i3 == i4 // false（不是一个地址）
+
+==：比较int（值） integer（地址）
+
+值比较：
+
+```java
+System.out.printIn(i3.equals(i4));
+```

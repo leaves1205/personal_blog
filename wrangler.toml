@@ -1,0 +1,8 @@
+name = "my-learning-blog"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "learning_blog_db"
+database_name = "learning-blog-db"
+database_id = "ffeea417-84a8-49c7-8e70-0eea77314482"
