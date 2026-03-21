@@ -1,7 +1,8 @@
 import type { APIRoute } from 'astro';
 import { hashPassword, createSessionToken } from '../../lib/auth';
+import { env } from 'cloudflare:workers';
 
-export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => {
+export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const formData = await request.formData();
   const username = formData.get('username')?.toString().trim();
   const password = formData.get('password')?.toString();
@@ -10,8 +11,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
     return redirect('/register?error=invalid');
   }
 
-  const db = locals.runtime.env.learning_blog_db;
-  const secret = locals.runtime.env.SESSION_SECRET;
+  const db = env.learning_blog_db;
+  const secret = env.SESSION_SECRET;
 
   // 检查用户名是否已存在
   const existing = await db

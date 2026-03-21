@@ -5,11 +5,13 @@ interface Env {
   SESSION_SECRET: string;
 }
 
+declare module 'cloudflare:workers' {
+  const env: Env;
+  export { env };
+}
+
 declare namespace App {
   interface Locals {
-    runtime: {
-      env: Env;
-    };
     user: {
       userId: number;
       username: string;
