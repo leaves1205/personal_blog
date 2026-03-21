@@ -7,11 +7,9 @@ posts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 const recentPosts = posts.slice(0, 5);
 
 const tagColors: Record<string, string> = {
-  '前端':   'bg-blue-100 text-blue-700',
+  'full-stack':   'bg-blue-100 text-blue-700',
   'AI':     'bg-violet-100 text-violet-700',
-  '算法':   'bg-emerald-100 text-emerald-700',
-  '随笔':   'bg-amber-100 text-amber-700',
-  '实践':   'bg-rose-100 text-rose-700',
+  'algorithm':   'bg-emerald-100 text-emerald-700',
 };
 function tagColor(tag: string) {
   return tagColors[tag] ?? 'bg-slate-100 text-slate-600';
@@ -34,13 +32,13 @@ function tagColor(tag: string) {
         技术笔记
       </span>
     </h1>
-    <p class="text-slate-500 text-lg leading-relaxed max-w-md">
-      记录前端、AI、算法和项目实践中的思考与总结，沉淀知识，持续成长。
+    <p class="text-lg leading-relaxed max-w-md">
+      notes for full-stack, algorithm...
     </p>
 
     <!-- Topic tags -->
     <div class="flex flex-wrap gap-2 mt-6">
-      {(['前端', 'AI', '算法', '实践', '随笔'] as const).map(tag => (
+      {(['full-stack', 'AI', 'algorithm'] as const).map(tag => (
         <span class={`px-3 py-1 rounded-full text-sm font-medium ${tagColor(tag)}`}>
           {tag}
         </span>
