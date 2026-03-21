@@ -1,0 +1,113 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { env } from 'cloudflare:workers';
+
+const user = Astro.locals.user;
+
+type DbPost = {
+  id: number;
+  slug: string;
+  title: string;
+  description: string;
+  tags: string;
+  status: string;
+  created_at: string;
+};
+
+const { results: posts } = await env.learning_blog_db
+  .prepare('SELECT id, slug, title, description, tags, status, created_at FROM posts WHERE author_id = ? ORDER BY created_at DESC')
+  .bind(user.userId)
+  .all<DbPost>();
+
+const submitted = Astro.url.searchParams.get('submitted');
+
+const statusLabel: Record<string, string> = {
+  pending:   '待审核',
+  published: '已发布',
+  rejected:  '未通过',
+};
+const statusColor: Record<string, string> = {
+  pending:   'bg-amber-100 text-amber-700',
+  published: 'bg-green-100 text-green-700',
+  rejected:  'bg-red-100 text-red-600',
+};
+---
+
+<Layout title="我的文章 | OpenIT">
+
+  <div class="mb-8 flex items-center justify-between flex-wrap gap-3">
+    <div>
+      <h1 class="text-2xl font-extrabold text-slate-900">我的文章</h1>
+      <p class="mt-1 text-sm text-slate-400">共 {posts.length} 篇</p>
+    </div>
+    <a
+      href="/write"
+      class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-semibold px-4 py-2 rounded-xl hover:opacity-90 transition-opacity"
+    >
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      写新文章
+    </a>
+  </div>
+
+  {submitted && (
+    <div class="mb-6 bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      文章已提交，等待管理员审核后将在文章列表中展示。
+    </div>
+  )}
+
+  {posts.length === 0 ? (
+    <div class="text-center py-24 text-slate-400">
+      <svg class="mx-auto mb-4 opacity-30" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/>
+      </svg>
+      <p class="text-sm">还没有文章，<a href="/write" class="text-indigo-500 hover:underline">去写第一篇吧！</a></p>
+    </div>
+  ) : (
+    <div class="space-y-3">
+      {posts.map(p => {
+        const tags: string[] = JSON.parse(p.tags || '[]');
+        return (
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 flex gap-4 group hover:border-slate-300 transition-colors">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-3 mb-1.5">
+                <h2 class="font-semibold text-slate-900 leading-snug">
+                  {p.status === 'published'
+                    ? <a href={`/blog/${p.slug}`} class="hover:text-indigo-600 transition-colors">{p.title}</a>
+                    : p.title
+                  }
+                </h2>
+                <span class={`shrink-0 px-2.5 py-0.5 rounded-full text-xs font-semibold ${statusColor[p.status] ?? 'bg-slate-100 text-slate-500'}`}>
+                  {statusLabel[p.status] ?? p.status}
+                </span>
+              </div>
+              {p.description && (
+                <p class="text-sm text-slate-400 mb-2 line-clamp-1">{p.description}</p>
+              )}
+              <div class="flex items-center gap-2 flex-wrap">
+                {tags.map(tag => (
+                  <span class="px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-500">{tag}</span>
+                ))}
+                <time class="text-xs text-slate-400 ml-auto">{p.created_at.slice(0, 10)}</time>
+              </div>
+            </div>
+            <form method="POST" action="/api/posts/delete" class="shrink-0 self-start opacity-0 group-hover:opacity-100 transition-opacity">
+              <input type="hidden" name="post_id" value={p.id} />
+              <input type="hidden" name="from" value="/my-posts" />
+              <button type="submit" class="text-xs text-red-400 hover:text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">
+                删除
+              </button>
+            </form>
+          </div>
+        );
+      })}
+    </div>
+  )}
+
+</Layout>

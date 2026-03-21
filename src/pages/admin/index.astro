@@ -17,6 +17,14 @@ const { results: comments } = await env.learning_blog_db
 const { results: users } = await env.learning_blog_db
   .prepare('SELECT id, username, role, created_at FROM users ORDER BY created_at ASC')
   .all<User>();
+
+type DbPost = { id: number; slug: string; title: string; description: string; author_name: string; status: string; created_at: string };
+const { results: pendingPosts } = await env.learning_blog_db
+  .prepare("SELECT id, slug, title, description, author_name, status, created_at FROM posts WHERE status = 'pending' ORDER BY created_at ASC")
+  .all<DbPost>();
+const { results: allPosts } = await env.learning_blog_db
+  .prepare("SELECT id, slug, title, author_name, status, created_at FROM posts ORDER BY created_at DESC")
+  .all<DbPost>();
 ---
 
 <Layout title="Admin | OpenIT">
@@ -30,7 +38,7 @@ const { results: users } = await env.learning_blog_db
   </div>
 
   <!-- 统计卡片 -->
-  <div class="grid grid-cols-2 gap-4 mb-10">
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
     <div class="bg-white rounded-2xl border border-slate-200 p-5">
       <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">用户总数</p>
       <p class="text-3xl font-extrabold text-indigo-600">{users.length}</p>
@@ -38,6 +46,14 @@ const { results: users } = await env.learning_blog_db
     <div class="bg-white rounded-2xl border border-slate-200 p-5">
       <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">评论总数</p>
       <p class="text-3xl font-extrabold text-purple-600">{comments.length}</p>
+    </div>
+    <div class="bg-white rounded-2xl border border-slate-200 p-5">
+      <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">文章总数</p>
+      <p class="text-3xl font-extrabold text-emerald-600">{allPosts.length}</p>
+    </div>
+    <div class="bg-white rounded-2xl border border-amber-100 p-5">
+      <p class="text-xs text-amber-500 uppercase tracking-widest mb-1">待审核</p>
+      <p class="text-3xl font-extrabold text-amber-500">{pendingPosts.length}</p>
     </div>
   </div>
 
@@ -68,6 +84,96 @@ const { results: users } = await env.learning_blog_db
         </tbody>
       </table>
     </div>
+  </section>
+
+  <!-- 文章审核 -->
+  <section id="posts" class="mb-12">
+    <h2 class="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4">待审核文章</h2>
+    {pendingPosts.length === 0 ? (
+      <p class="text-slate-400 text-sm text-center py-8 bg-white rounded-2xl border border-slate-200">暂无待审核文章</p>
+    ) : (
+      <div class="space-y-3">
+        {pendingPosts.map(p => (
+          <div class="bg-white rounded-2xl border border-amber-200 p-4 flex gap-4 items-start">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1 flex-wrap">
+                <span class="font-semibold text-slate-800 text-sm">{p.title}</span>
+                <span class="text-slate-300">·</span>
+                <span class="text-xs text-slate-500">by {p.author_name}</span>
+                <span class="text-slate-300">·</span>
+                <time class="text-xs text-slate-400">{p.created_at.slice(0, 10)}</time>
+              </div>
+              {p.description && <p class="text-sm text-slate-500 line-clamp-1">{p.description}</p>}
+            </div>
+            <div class="shrink-0 flex gap-2">
+              <form method="POST" action="/api/admin/approve-post">
+                <input type="hidden" name="post_id" value={p.id} />
+                <input type="hidden" name="action" value="approve" />
+                <button type="submit" class="text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg transition-colors font-medium">
+                  通过
+                </button>
+              </form>
+              <form method="POST" action="/api/admin/approve-post">
+                <input type="hidden" name="post_id" value={p.id} />
+                <input type="hidden" name="action" value="reject" />
+                <button type="submit" class="text-xs bg-slate-200 hover:bg-red-100 text-slate-600 hover:text-red-600 px-3 py-1.5 rounded-lg transition-colors">
+                  拒绝
+                </button>
+              </form>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+
+    <h2 class="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4 mt-8">所有文章</h2>
+    {allPosts.length === 0 ? (
+      <p class="text-slate-400 text-sm text-center py-8 bg-white rounded-2xl border border-slate-200">暂无文章</p>
+    ) : (
+      <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-slate-100 bg-slate-50">
+              <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">标题</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">作者</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">状态</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">时间</th>
+              <th class="px-5 py-3"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {allPosts.map(p => (
+              <tr class="border-b border-slate-50 last:border-0 group">
+                <td class="px-5 py-3 font-medium text-slate-800 max-w-xs truncate">
+                  {p.status === 'published'
+                    ? <a href={`/blog/${p.slug}`} class="hover:text-indigo-600">{p.title}</a>
+                    : p.title
+                  }
+                </td>
+                <td class="px-5 py-3 text-slate-500">{p.author_name}</td>
+                <td class="px-5 py-3">
+                  <span class={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                    p.status === 'published' ? 'bg-green-100 text-green-700'
+                    : p.status === 'pending'  ? 'bg-amber-100 text-amber-700'
+                    : 'bg-red-100 text-red-600'
+                  }`}>
+                    {p.status === 'published' ? '已发布' : p.status === 'pending' ? '待审核' : '未通过'}
+                  </span>
+                </td>
+                <td class="px-5 py-3 text-slate-400 text-xs">{p.created_at.slice(0, 10)}</td>
+                <td class="px-5 py-3">
+                  <form method="POST" action="/api/posts/delete" class="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <input type="hidden" name="post_id" value={p.id} />
+                    <input type="hidden" name="from" value="/admin#posts" />
+                    <button type="submit" class="text-xs text-red-400 hover:text-red-600">删除</button>
+                  </form>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
   </section>
 
   <!-- 评论管理 -->

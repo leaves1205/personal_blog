@@ -1,0 +1,163 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const error = Astro.url.searchParams.get('error');
+---
+
+<Layout title="写文章 | OpenIT">
+
+  <div class="mb-8">
+    <h1 class="text-2xl font-extrabold text-slate-900">写文章</h1>
+    <p class="mt-1 text-sm text-slate-400">支持 Markdown 格式 · 提交后等待管理员审核发布</p>
+  </div>
+
+  {error === 'missing' && (
+    <div class="mb-5 bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl">
+      标题和正文内容不能为空，请补充后重新提交。
+    </div>
+  )}
+
+  <form method="POST" action="/api/posts/create" class="space-y-5">
+
+    <!-- Title -->
+    <div>
+      <label class="block text-sm font-medium text-slate-600 mb-1.5">标题 <span class="text-red-400">*</span></label>
+      <input
+        type="text"
+        name="title"
+        required
+        maxlength="120"
+        placeholder="文章标题"
+        class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
+      />
+    </div>
+
+    <!-- Description -->
+    <div>
+      <label class="block text-sm font-medium text-slate-600 mb-1.5">摘要 <span class="text-slate-400 font-normal">（可选，显示在文章列表）</span></label>
+      <input
+        type="text"
+        name="description"
+        maxlength="200"
+        placeholder="一句话介绍这篇文章..."
+        class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
+      />
+    </div>
+
+    <!-- Tags -->
+    <div>
+      <label class="block text-sm font-medium text-slate-600 mb-1.5">
+        标签 <span class="text-slate-400 font-normal">（逗号分隔，如：全栈,AI,算法）</span>
+      </label>
+      <input
+        type="text"
+        name="tags"
+        maxlength="100"
+        placeholder="全栈,AI,实践"
+        class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
+      />
+    </div>
+
+    <!-- Editor -->
+    <div>
+      <div class="flex items-center justify-between mb-1.5">
+        <label class="text-sm font-medium text-slate-600">
+          正文 <span class="text-red-400">*</span>
+          <span class="text-slate-400 font-normal ml-1">（Markdown）</span>
+        </label>
+        <div class="flex gap-1.5 text-xs">
+          <button type="button" id="tab-write" class="tab-btn active">编辑</button>
+          <button type="button" id="tab-preview" class="tab-btn">预览</button>
+        </div>
+      </div>
+
+      <div id="editor-pane">
+        <textarea
+          id="editor"
+          name="content"
+          required
+          rows="22"
+          placeholder="# 文章标题
+
+用 Markdown 写下你的内容...
+
+## 二级标题
+
+正文段落，支持 **加粗**、*斜体*、`代码`、列表等。
+
+```js
+// 代码块示例
+console.log('Hello OpenIT!');
+```"
+          class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent resize-y font-mono leading-relaxed"
+        ></textarea>
+      </div>
+
+      <div id="preview-pane" class="hidden border border-slate-200 rounded-xl px-6 py-5 min-h-[28rem] bg-white prose prose-slate max-w-none overflow-auto">
+        <p class="text-slate-400 italic text-sm not-prose">切换到预览后将在此处渲染 Markdown...</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4 pt-1">
+      <button
+        type="submit"
+        class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-semibold px-6 py-2.5 rounded-xl hover:opacity-90 transition-opacity"
+      >
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4 20-7z"/>
+        </svg>
+        提交审核
+      </button>
+      <a href="/my-posts" class="text-sm text-slate-400 hover:text-slate-600 transition-colors">查看我的文章</a>
+    </div>
+
+  </form>
+
+</Layout>
+
+<script type="module">
+  // Use marked from CDN for live preview
+  const { marked } = await import('https://cdn.jsdelivr.net/npm/marked@12/src/marked.esm.js');
+
+  const editor     = document.getElementById('editor');
+  const preview    = document.getElementById('preview-pane');
+  const editorPane = document.getElementById('editor-pane');
+  const tabWrite   = document.getElementById('tab-write');
+  const tabPreview = document.getElementById('tab-preview');
+
+  function renderPreview() {
+    const html = marked.parse(editor.value || '');
+    preview.innerHTML = html || '<p class="text-slate-400 italic text-sm not-prose">切换到预览后将在此处渲染 Markdown...</p>';
+  }
+
+  tabWrite.addEventListener('click', () => {
+    editorPane.classList.remove('hidden');
+    preview.classList.add('hidden');
+    tabWrite.classList.add('active');
+    tabPreview.classList.remove('active');
+  });
+
+  tabPreview.addEventListener('click', () => {
+    renderPreview();
+    editorPane.classList.add('hidden');
+    preview.classList.remove('hidden');
+    tabWrite.classList.remove('active');
+    tabPreview.classList.add('active');
+  });
+
+  editor.addEventListener('input', () => {
+    if (!preview.classList.contains('hidden')) renderPreview();
+  });
+</script>
+
+<style>
+  .tab-btn {
+    padding: 4px 12px;
+    border-radius: 8px;
+    color: #64748b;
+    transition: all 0.15s;
+    font-size: 0.75rem;
+  }
+  .tab-btn:hover:not(.active) { background: #f1f5f9; }
+  .tab-btn.active { background: #e0e7ff; color: #4338ca; font-weight: 600; }
+</style>

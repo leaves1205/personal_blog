@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { getCollection } from 'astro:content';
+import { env } from 'cloudflare:workers';
 
 interface Props {
   title: string;
@@ -9,8 +10,19 @@ const { title } = Astro.props;
 const pathname = Astro.url.pathname;
 const user = Astro.locals.user;
 
-const allPosts = await getCollection('blog', ({ data }) => data.draft !== true);
-allPosts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const mdPosts = await getCollection('blog', ({ data }) => data.draft !== true);
+
+type SidebarPost = { slug: string; title: string; date: Date };
+
+const { results: dbPostsMeta } = await env.learning_blog_db
+  .prepare("SELECT slug, title, created_at FROM posts WHERE status = 'published' ORDER BY created_at DESC")
+  .all<{ slug: string; title: string; created_at: string }>();
+
+const allPosts: SidebarPost[] = [
+  ...mdPosts.map(p => ({ slug: p.id, title: p.data.title, date: p.data.date })),
+  ...dbPostsMeta.map(p => ({ slug: p.slug, title: p.title, date: new Date(p.created_at) })),
+];
+allPosts.sort((a, b) => b.date.getTime() - a.date.getTime());
 ---
 <!doctype html>
 <html lang="zh-CN">
@@ -79,6 +91,21 @@ allPosts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
             </svg>
             所有文章
           </a>
+          <a href="/write" class={`sidebar-link ${pathname === '/write' ? 'active' : ''}`}>
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            写文章
+          </a>
+          <a href="/my-posts" class={`sidebar-link ${pathname === '/my-posts' ? 'active' : ''}`}>
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+            我的文章
+          </a>
         </nav>
 
         <!-- Article list -->
@@ -91,11 +118,11 @@ allPosts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
           ) : (
             <ol class="space-y-0.5">
               {allPosts.map((post, i) => {
-                const isActive = pathname === `/blog/${post.id}`;
+                const isActive = pathname === `/blog/${post.slug}`;
                 return (
                   <li>
                     <a
-                      href={`/blog/${post.id}`}
+                      href={`/blog/${post.slug}`}
                       class={`group flex items-start gap-2.5 px-2 py-2 rounded-lg text-sm transition-colors ${
                         isActive
                           ? 'bg-white/15 text-white'
@@ -107,7 +134,7 @@ allPosts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
                       } transition-colors`}>
                         {i + 1}
                       </span>
-                      <span class="leading-snug line-clamp-2">{post.data.title}</span>
+                      <span class="leading-snug line-clamp-2">{post.title}</span>
                     </a>
                   </li>
                 );
