@@ -1,11 +1,14 @@
 ---
-title: 第一篇文章
-description: 这是我的学习博客的第一篇文章。
-date: 2026-03-19
-tags: [随笔]
+title: JAVA
+description: learning for java)
+date: 2026-03-21
+tags: [全栈]
 draft: false
 ---
+# JAVA面试学习
 
-# 欢迎来到我的博客
+## 1.特点
 
-这里记录我在前端、AI、算法和项目实践中的学习总结。
+1. 丰富的外置库
+   内置库：.util.*  .io.*
+   外置库：处理json等，.class打包成.jar ,目前直接可以在配置文件写依赖，Gson,Jackson,fastjson,**Spring Boot**
