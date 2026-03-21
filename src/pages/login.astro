@@ -9,47 +9,236 @@ const error = Astro.url.searchParams.get('error');
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>登录 - 我的学习博客</title>
+  <title>登录 - Jenny's Notes</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: #0a0a0f;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Inter', system-ui, sans-serif;
+      overflow: hidden;
+    }
+
+    /* 背景动态粒子网格 */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(99,102,241,0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99,102,241,0.07) 1px, transparent 1px);
+      background-size: 40px 40px;
+      animation: gridPan 20s linear infinite;
+    }
+    @keyframes gridPan {
+      0%   { transform: translateY(0); }
+      100% { transform: translateY(40px); }
+    }
+
+    /* 光晕 */
+    .glow-1 {
+      position: fixed;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
+      top: -200px; left: -200px;
+      animation: float1 8s ease-in-out infinite;
+    }
+    .glow-2 {
+      position: fixed;
+      width: 500px; height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(168,85,247,0.12) 0%, transparent 70%);
+      bottom: -150px; right: -100px;
+      animation: float2 10s ease-in-out infinite;
+    }
+    @keyframes float1 {
+      0%, 100% { transform: translate(0, 0); }
+      50%       { transform: translate(30px, 20px); }
+    }
+    @keyframes float2 {
+      0%, 100% { transform: translate(0, 0); }
+      50%       { transform: translate(-20px, -30px); }
+    }
+
+    /* 卡片 */
+    .card {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 420px;
+      margin: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 40px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 0 0 1px rgba(99,102,241,0.1), 0 32px 64px rgba(0,0,0,0.4);
+    }
+
+    /* AI 图标 */
+    .ai-icon {
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+      box-shadow: 0 0 30px rgba(99,102,241,0.5);
+      animation: pulse 3s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(99,102,241,0.5); }
+      50%       { box-shadow: 0 0 50px rgba(99,102,241,0.8); }
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      text-align: center;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 28px;
+    }
+
+    /* 错误提示 */
+    .error-box {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.82rem;
+      color: #fca5a5;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    /* 表单 */
+    .field { margin-bottom: 16px; }
+    label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 6px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    input {
+      width: 100%;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 0.92rem;
+      color: #fff;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input::placeholder { color: rgba(255,255,255,0.2); }
+    input:focus {
+      border-color: rgba(99,102,241,0.6);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+    }
+
+    /* 按钮 */
+    button[type="submit"] {
+      width: 100%;
+      margin-top: 8px;
+      padding: 13px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.01em;
+      transition: opacity 0.2s, transform 0.1s;
+      box-shadow: 0 4px 20px rgba(99,102,241,0.4);
+    }
+    button[type="submit"]:hover  { opacity: 0.9; }
+    button[type="submit"]:active { transform: scale(0.98); }
+
+    /* 底部链接 */
+    .footer-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.83rem;
+      color: rgba(255,255,255,0.35);
+    }
+    .footer-link a {
+      color: #818cf8;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .footer-link a:hover { color: #a5b4fc; }
+
+    /* 分隔线装饰 */
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 24px 0 20px;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.08);
+    }
+    .divider span {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.2);
+    }
+  </style>
 </head>
-<body class="min-h-screen bg-gray-50 flex items-center justify-center">
-  <div class="bg-white p-8 rounded-2xl shadow-md w-full max-w-sm">
-    <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">登录</h1>
+<body>
+  <div class="bg-grid"></div>
+  <div class="glow-1"></div>
+  <div class="glow-2"></div>
+
+  <div class="card">
+    <!-- AI 图标 -->
+    <div class="ai-icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round">
+        <path d="M12 2a4 4 0 0 1 4 4v1h1a3 3 0 0 1 0 6h-1v1a4 4 0 0 1-8 0v-1H7a3 3 0 0 1 0-6h1V6a4 4 0 0 1 4-4z"/>
+        <circle cx="9" cy="9" r="1" fill="white" stroke="none"/>
+        <circle cx="15" cy="9" r="1" fill="white" stroke="none"/>
+      </svg>
+    </div>
+
+    <h1>欢迎回来</h1>
+    <p class="subtitle">Jenny's Notes · 私人知识库</p>
 
     {error && (
-      <p class="mb-4 text-sm text-red-600 bg-red-50 rounded-lg px-4 py-2 text-center">
-        {error === 'invalid' ? '用户名或密码错误' : '请先登录'}
-      </p>
+      <div class="error-box">
+        {error === 'invalid' ? '用户名或密码错误，请重试' : '请先登录后访问'}
+      </div>
     )}
 
-    <form method="POST" action="/api/login" class="space-y-4">
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
-        <input
-          type="text"
-          name="username"
-          required
-          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+    <form method="POST" action="/api/login">
+      <div class="field">
+        <label>用户名</label>
+        <input type="text" name="username" placeholder="输入你的用户名" required autocomplete="username" />
       </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">密码</label>
-        <input
-          type="password"
-          name="password"
-          required
-          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+      <div class="field">
+        <label>密码</label>
+        <input type="password" name="password" placeholder="输入你的密码" required autocomplete="current-password" />
       </div>
-      <button
-        type="submit"
-        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg text-sm transition-colors"
-      >
-        登录
-      </button>
+      <button type="submit">进入笔记空间 →</button>
     </form>
 
-    <p class="mt-4 text-center text-sm text-gray-500">
-      没有账号？<a href="/register" class="text-blue-600 hover:underline">注册</a>
+    <div class="divider"><span>or</span></div>
+
+    <p class="footer-link">
+      还没有账号？<a href="/register">立即注册</a>
     </p>
   </div>
 </body>
