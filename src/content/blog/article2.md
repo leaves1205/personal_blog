@@ -5,7 +5,7 @@ title: full-stack
 description: learning for full-stack
 date: 2026-03-21
 tags: [full-stack]
-draft: true
+draft: false
 ---
 
 # 全栈内容积累
