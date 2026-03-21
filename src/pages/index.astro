@@ -1,9 +1,33 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
+import { env } from 'cloudflare:workers';
 
-const posts = await getCollection('blog', ({ data }) => data.draft !== true);
-posts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const mdPosts = await getCollection('blog', ({ data }) => data.draft !== true);
+
+type DbPost = { slug: string; title: string; description: string; tags: string; created_at: string };
+const { results: dbPosts } = await env.learning_blog_db
+  .prepare("SELECT slug, title, description, tags, created_at FROM posts WHERE status = 'published'")
+  .all<DbPost>();
+
+type Post = { slug: string; title: string; description: string; tags: string[]; date: Date };
+const posts: Post[] = [
+  ...mdPosts.map(p => ({
+    slug: p.id,
+    title: p.data.title,
+    description: p.data.description,
+    tags: p.data.tags,
+    date: p.data.date,
+  })),
+  ...dbPosts.map(p => ({
+    slug: p.slug,
+    title: p.title,
+    description: p.description,
+    tags: JSON.parse(p.tags || '[]') as string[],
+    date: new Date(p.created_at),
+  })),
+];
+posts.sort((a, b) => b.date.getTime() - a.date.getTime());
 const recentPosts = posts.slice(0, 5);
 
 const tagColors: Record<string, string> = {
@@ -63,7 +87,7 @@ function tagColor(tag: string) {
       <div class="space-y-3">
         {recentPosts.map((post, i) => (
           <a
-            href={`/blog/${post.id}`}
+            href={`/blog/${post.slug}`}
             class="group flex items-start gap-4 p-4 -mx-4 rounded-xl hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-200 transition-all"
           >
             <span class="shrink-0 mt-0.5 w-7 h-7 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold shadow-sm">
@@ -71,12 +95,12 @@ function tagColor(tag: string) {
             </span>
             <div class="min-w-0 flex-1">
               <h3 class="font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
-                {post.data.title}
+                {post.title}
               </h3>
-              <p class="mt-0.5 text-sm text-slate-500 truncate">{post.data.description}</p>
+              <p class="mt-0.5 text-sm text-slate-500 truncate">{post.description}</p>
             </div>
             <time class="shrink-0 text-xs text-slate-400 mt-1">
-              {post.data.date.toISOString().slice(0, 10)}
+              {post.date.toISOString().slice(0, 10)}
             </time>
           </a>
         ))}
