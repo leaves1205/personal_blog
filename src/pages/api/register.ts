@@ -10,7 +10,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
     return redirect('/register?error=invalid');
   }
 
-  const db = locals.runtime.env.DB;
+  const db = locals.runtime.env.learning_blog_db;
   const secret = locals.runtime.env.SESSION_SECRET;
 
   // 检查用户名是否已存在

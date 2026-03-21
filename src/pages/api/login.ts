@@ -10,7 +10,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
     return redirect('/login?error=invalid');
   }
 
-  const db = locals.runtime.env.DB;
+  const db = locals.runtime.env.learning_blog_db;
   const secret = locals.runtime.env.SESSION_SECRET;
 
   const user = await db

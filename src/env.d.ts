@@ -1,7 +1,7 @@
 /// <reference types="astro/client" />
 
 interface Env {
-  DB: D1Database;
+  learning_blog_db: D1Database;
   SESSION_SECRET: string;
 }
 
