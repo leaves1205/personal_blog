@@ -7,7 +7,7 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   const postSlug = formData.get('post_slug')?.toString();
 
   if (!content || !postSlug || content.length > 1000) {
-    return redirect(`/blog/${postSlug}`);
+    return redirect(`/blog/${postSlug}#comments`);
   }
 
   const { userId, username } = locals.user;
@@ -17,5 +17,5 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
     .bind(postSlug, userId, username, content)
     .run();
 
-  return redirect(`/blog/${postSlug}`);
+  return redirect(`/blog/${postSlug}#comments`);
 };
