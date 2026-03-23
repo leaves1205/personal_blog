@@ -120,3 +120,25 @@ i3 == i4 // false（不是一个地址）
 ```java
 System.out.printIn(i3.equals(i4));
 ```
+
+如果是浮点数，System.out.PrintIn(i1 == i 2) 也是false， 因为浮点数在范围内是无限的
+
+## 7.重载和重写的区别
+
+**重写（override）**
+
+子类把父类本身的方法重写一遍，子类继承父类原有方法，方法名，参数列表和返回类型相同，public >protected>default> private
+
+重载(overload)
+
+同名方法有不同参数列表（参数类型不同，个数不同，顺序不同）
+
+## 8.equals和==区别
+
+==：比地址是否相同（指针操作）
+
+equals：内容是否相等
+
+## 9.hashcode作用
+
+一类list 一类set
