@@ -227,7 +227,7 @@ linklist是双链表，在增加删除性能更好，但是get和set弱于arrayl
 
 hashmap继承abstractmap hashtable继承dictionary。实现了map，clonable，serializable
 
-### 对外的接口不同 
+### 对外的接口不同
 
 hashtable比hashmap多提供了elements和contains两个方法，elements继承hashtable的父类dictionary。elements的方法用于返回此hashtable中的value枚举
 
@@ -319,7 +319,6 @@ List<Integer>iniData=new ArrayList<>()
 在产生hash冲突的时候两个不相等的对象就会有相同的hashcode。有三种方法处理
 
 * 拉链发：每个哈希表节点都有一个next指针，多个哈希表节点可以用next指针构成一个单项链表，被分配到同意索引上的多个节点可以用这个单向链表进行储存
-
 * 开放定址法：冲突就去找下一个空的散列地址
 * 在哈希：使用第二个第三个哈希函数计算地址直到没有冲突
 
@@ -332,9 +331,7 @@ List<Integer>iniData=new ArrayList<>()
 
 * 类不可被继承
 * 方法不可被重写
-
 * 变相不可被改变
-
 * JVM尝试内联提高效率
 * 编译阶段存在于常量池
 
@@ -386,7 +383,6 @@ Java编译器不会检查他，当程序中出现这类异常没有用throws或�
 常见五种运行时异常：
 
 * ClassCastException
-
 * IndexOutOfBoundsException
 * NullPointerException
 * ArrayStoreException
@@ -468,7 +464,6 @@ SOF(StackOverflow):
 
 * 流向：输入输出
 * 操作单元：字节流和字符流
-
 * 流的角色：节点流和处理流
 
 IO流从4个抽象类基类中派生出来的
@@ -484,10 +479,9 @@ NIO是new io，nio用块
 ## java反射的作用原理
 
 1. 反射机制在运行时，对于任意一个类，都能知道这个类所有的属性和方法，对于任意对象都能调用他的任意一个方法。在java中给定类的名字就可以通过反射机制来获得类的所有信息
-
 2. 哪里用反射机制
 
-jdbc 
+jdbc
 
 ```java
 Class.forNam('com.mysqljdbc.Driver.class)
@@ -503,7 +497,7 @@ Class.forNam('com.mysqljdbc.Driver.class)
 
 5. 反射机制的优缺点
 
-优点：1.运行时动态获得类的实例 2.与动态编译结合 缺点：1.使用反射性能较低，需要解析字节码，将内存中的对象进行解析 
+优点：1.运行时动态获得类的实例 2.与动态编译结合 缺点：1.使用反射性能较低，需要解析字节码，将内存中的对象进行解析
 
 解决方法：1.setAccessible(true) 2.多次创建一个类的实例有缓存会快很多 3.ReflectASM工具类
 
@@ -586,13 +580,9 @@ class<?> ckazz = Class.forNmae("com.tian.User")
 ## 红黑树的特征
 
 1. 每个节点是黑色或者红色
-
 2. 根节点是黑色
-
 3. 每个叶子节点是红色，其子节点必须是黑色
-
 4. 一个叶子节点是红色，其子节点必须都是黑色
-
 5. 从一个节点到该节点的子孙节点的所有路径上包含相同数目的黑节点
 
 ## java异常
@@ -601,7 +591,6 @@ try-catch-finally
 
 * try负责监控可能出现异常的代码
 * catch负责捕捉可能出现的异常
-
 * finally清理各种资源
 * try必须，catch和finally至少存在一个标准异常处理流程
 
@@ -622,3 +611,190 @@ GC粉黛回收的思想和依据，以及不同垃圾回收算法的回收思路
 执行模式。。。
 
 ## JVM构成
+
+1. JVM内存模型
+
+线程独占：栈，本地方法栈， 程序计算器， 线程共享， 堆，方法区
+
+2. 栈：
+
+方法栈，线程私有的，线程执行方法是都会创建一个栈阵，用来存储局部变量表，操作栈，动态链接方法出口等信息，调用方法执行入栈，方法返回式执行出栈
+
+3. 本地方法栈
+
+与栈类似，也是用来保存执行方法的信息，执行java方法是使用栈，执行Native方法时使用本地方法栈
+
+4. 程序计数器
+
+保存着当前线程执行的字节码的位置，每个线程工作时都有独立的计数器，只为执行java方法服务，执行native方法时，程序计数器为空
+
+5. 堆
+
+jvm内存管理最大的一块，对被线程共享，目的是存放对象的实例，几乎所有的对象都会放在这里，没有空间抛出OOM异常，根据对象的存货周期不同，JVM把对象进行分代管理，由垃圾回收器进行垃圾的回收管理
+
+6. 方法区
+
+又称非堆区，用于存储已被虚拟机加载的类信息，常量，静态变量
+
+7. JVM内存可见性
+
+JMM是定义程序中变量的访问规则，线程对于变量的操作只能在自己的工作内存中进行而不能对主内存操作。JMM需要提供原子性，可见性，有序性保证
+
+## 类加载与卸载
+
+加载过程：
+
+加载：通过类的完全限定名，查找此类字节码的文件，利用字节码文件创建class对象
+
+验证：确保class文件符合当前虚拟机的要求，不会危害到虚拟机自身安全
+
+准备：进行内存分配
+
+解析：将常量池中的符号引用替换为直接引用的过程
+
+初始化：完成静态块执行以及静态变量的赋值，先初始化父类再初始化当前类，对类主动使用时才会初始化
+
+1. 加载机制-双亲委派模式
+
+加载器加载类时先把请求委托给自己的父亲加载器执行，直到顶层的启动类加载器，父亲加载器能够完成加载则成功返回，不能则子类加载器才会自己尝试加载
+
+优点：避免类的重复加载，避免java的核心api被篡改
+
+2. 分代回收
+
+年轻代->标记-复制 老年代->标记-清除
+
+3. 回收算法
+
+a.G1算法
+
+b.ZGC算法
+
+## 简述一下JVM内存模型
+
+1. JVM内存模型简介
+
+线程私有区和共享区
+
+**线程私有区**
+
+1. 程序计数器：
+2. 虚拟机栈
+3. 本地方法栈
+
+线程共享区
+
+1. 方法区
+2. 堆
+
+## 说说堆和栈的区别
+
+栈式运行时的单位，代表逻辑，内含基本数据类型和队中对象引用，所在区域连续，没有碎片，堆式存储单位，代表着数据，可被多个栈共享，所在区域不连续，会有碎片
+
+1. 功能不同
+
+栈内存用来储存局部变量和方法调用，而堆内存用来储存java对象，无论是成员变量，局部变量还是类变量
+
+2. 共享性不同
+
+栈内存是线程私有的，堆内存是所有线程共有的
+
+3. 异常错误不同
+
+如果栈内存或者堆内存不足都会抛出异常，栈空间不足：java.lang.StackOverFlowError， 堆空间不足：java.lang.OutOfMemoryError
+
+4. 空间大小
+
+栈的空间大小远远小于堆的
+
+## 什么时候会触发FullGC
+
+1. 旧生代空间不足：只有在新生代对象转入及创建为大对象，大数据才会出现不足的现象
+2. permanet generation 空间满：系统中要加载的类，反射的类和调用的方法较多时会被占满
+3. CMS GC时出现promotion failed和concurrent mode failure
+4. 统计得到的Minor GC晋升到旧生代的平均大小大于旧生代的剩余空间
+
+## 什么是JAVA虚拟机？为什么java被称作平台无关的语言
+
+java虚拟机是可以执行java字节码的虚拟机进程，java源文件被编译成能被java虚拟机执行的字节码文件。java被设计成允许应用程序可以运行在任意的平台，不需要每个平台单独编译
+
+## java内存结构
+
+![1774672391346](image/java-learning/1774672391346.png)
+
+* heap:是java虚拟机所管理的内存中的最大的一块，java堆是被所有线程共享的一块内存区域，在虚拟机启动时创建，此内存区域的唯一目的就是存放对象实例，几乎所有的对象实例都在这里分配内存
+* method area:各个线程共享的内存区域，用于存储已被虚拟机加载的类信息，常量，静态变量，即时编译器编译后的代码等数据
+* program counter register：较小的内存空间，可以看作是当前线程所执行的字节码行号指示器
+* JVM Stack：生命周期和线程相同
+* Native method stacks: 为虚拟机使用到的native方法服务
+
+## 对象分配原则
+
+* 对象优先分配在eden区，没有足够空间就执行一次Minor  GC
+* 大对象进入老年代，避免在eden区和两个survivor区之间发生大量的内存拷贝
+* 长期存活的对象进入老年代，经过一次minor gc进入survivor区，之后每经过一次对象年龄加1，到达阈值对象进入老年区
+* 动态判断对象的年龄，survivor区中相同年龄的所有对象大小总和大于survivor空间的一半，年龄大于或等于该年龄的对象进入老年代
+* 每次进行minor gc会计算survivor区移动到老年区对象的平均大小，如果这个值大于老年区的剩余值大小则及逆行一次full gc，小于就检查handlepromotionfailure设置，true只进行monitor gc， false进行full gc
+
+## JVM加载class文件的原理机制
+
+ClassLoader和它的子类来实现的，经过编译的java源程序不是一个可执行的程序，是一个或多个类文件，java程序需要用某个类时，jvm会确保这个类被加载，连接和初始化，
+
+
+# leetcode刷题总结
+
+## 1.length的区别
+
+数组用length是数组自带的属性（field），字符串用length（），是类里的方法
+
+## 2.containskey()：
+
+判断某个key在不在map里
+
+返回的是true和false
+
+## 3.getOrDefault:
+
+取出某个key对应的value，如果key不存在就返回默认值,**是map的接口**
+
+**map**.**getOrDefault**(**key**, **defaultValue**)
+
+Map<String, Integer> map = new HashMap<>();
+map.put("apple", 3);
+
+System.out.println(map.getOrDefault("apple", 0));   // 3
+System.out.println(map.getOrDefault("orange", 0));  // 0 这里 `"orange"` 不存在，所以返回默认值 `0`。
+
+## 4.数组题：
+
+```java
+class Solution {
+    public int subarraySum(int[] nums, int k) {
+        int count = 0, pre = 0;
+        HAshMap<Integer, Integer> mp = new HAshMap<>();
+        mp.put(0,1);
+        for (int i =0; i<nums.length;i++){
+            pre += nums[i];
+            if (mp.containsKey(pre -k)){
+                count+=mp.get(pre-k);
+            }
+            mp.put(pre,mp.getOrDefault(pre,0) +1);
+        }
+        return count;
+    }
+}
+```
+
+## 5.status的作用
+
+用一个status对象把某个区间的信息打包返回
+
+## 6.private和public的区分
+
+public：外面可以随便访问
+
+private：外面可以访问，内部不行
+
+## 7.return getInfo(nums, 0, nums.length-1).mSum
+
+调用getInfo函数，然后取mSum字段
