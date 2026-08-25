@@ -1,3 +1,14 @@
+---
+title: "Pandas 基础学习笔记"
+description: "NumPy 与 Pandas 基础学习记录"
+date: 2026-08-25
+tags:
+  - pandas
+  - python
+  - data
+draft: false
+---
+
 # pandas基础
 
 ## 1.1 NumPy基础
@@ -87,7 +98,7 @@ normal() -- 正态分布
 
 randint() --- 随机整体数组
 
- 和 choice() --- 随机列表抽样
+和 choice() --- 随机列表抽样
 
 uniform(a,b,size) U[a,b] 且数组维度为size的均匀分布的数组
 
@@ -148,7 +159,7 @@ s['third']
 data = [{1,'a', 1.2] , [2,'b',2.2] , [3,'c', 3,2]}
 df = pd.DataFrame(data=data,
 	index = ['row_%d' %i for i in rang(3),  #row索引
-	column = ['col_0', 'col_1,'col_2']) #column index  
+	column = ['col_0', 'col_1,'col_2']) #column index
 df
 ```
 
@@ -194,7 +205,7 @@ df.info() ---- 表的信息概况
 
 ![1774612090304](image/pandas/1774612090304.png)
 
-df.describe()  ----- 表中数值列对应的主要统计量
+df.describe() ----- 表中数值列对应的主要统计量
 
 ![1774612101793](image/pandas/1774612101793.png)
 
